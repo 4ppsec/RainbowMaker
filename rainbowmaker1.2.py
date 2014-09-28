@@ -1,12 +1,9 @@
-
 from Tkinter import *
 import threading
 
 import tkFileDialog, ttk, tkFont, tkMessageBox
 import os, base64, time, string
 import hashlib
-#import paramiko
-#from datetime import datetime
 
 
 
@@ -28,6 +25,10 @@ class App:
         self.tester                 = 0
         self.filesToClose           = []
         self.hashList               = []
+        self.startTime              = None
+        self.stopTime               = None
+        self.totalRunTime           = None
+        
         
         self.listCombinations	                = [
                                                     ":", "::", "-", "=", "#", "@", "%", "&", "&", "^",
@@ -295,7 +296,13 @@ class App:
         # crack hash mode
         if (self.xMode.get() == 1):
             #self.fileMenu.entryconfig(0, state=DISABLED)
-            text = root.clipboard_get()
+            try:
+                text = root.clipboard_get()
+            except:
+                self.editStatus("Could not access clipboard or nothing to paste...", 1)
+
+            if (len(text) < 2):
+                self.editStatus("Nothing to paste...", 1)
             if (len(text) < 130):
                 self.text_match.delete(0, END)
                 try:
@@ -458,6 +465,8 @@ class App:
     ## first function called by the Run button
     def executeRun(self):
         self.stopThread = 0
+        self.startTime = time.time()
+        print self.startTime
         if ( self.xMode.get() == 1):
             if (self.isAutoSelect.get() == 1):
                 self.doAutoSelectHashAlgorithm()
@@ -832,13 +841,23 @@ class App:
         self.startPressed = 0
         self.lineCounter = 0
         self.progress["value"] = 100
+        self.stopTime = time.time()
+        print self.stopTime
+        self.totalRunTime = self.stopTime - self.startTime + 0.25
+        timr = str(self.totalRunTime)
+        dez = timr.find('.')
+        if (dez != -1):
+            totalTime = timr[:dez]+ '.' + timr[dez+1]
+        else:
+            totalTime = timr
+            
         if (status == 0):
             self.editStatus("Sorry, no luck!", 1)
             self.fileMenu.entryconfig(0, state=NORMAL)
             return 0
         
         elif (status == 1):
-            self.editStatus("Cracked! combination found:  " + msg +" ["+ myHash + "]", 1)
+            self.editStatus("Cracked! [Total runtime: " +  totalTime + "s] Combination found:\n" + msg + " {" + myHash + "}" , 1)
             self.fileMenu.entryconfig(0, state=NORMAL)
             return 1
         
@@ -963,7 +982,7 @@ root = Tk()
 myName = "RainbowMaker v1.2"
 root.title(myName)
 # use .ico file as icon
-ico_encoded ="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of/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//39/f/+/f7/+/7+//79/f/+/v3/W1rx/wCB9/8A55r/pIUZ/78AFf/PYKP//f7+//X9+//9/f7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v3+//z+/v/9/f3//v7+/1pd7/8Ge/v/AOOm/5yHGP++ABL/ykaH//z+/v/2/v3//f3+//7+/v/+/v7//v7+//79/f/9/vv//f7+//7+/v/8/f7//f78//7++//+/P7//v3+//7+/v/+/v7/+/79//7+/f9hWPP/A3n+/wDppv+ihxX/uAAZ/9k3f//8/v7//P7+//79/v/+/v7//v79//39/v/3+vr/9vr5//r+/v/1/vn/9vr7//v7+P/1+PP/7/r3//z8/v/+/v7//v7+//3+/v/+/v3/YVju/wCD+P8B6ar/rYAS/6UAFv/VOoD//v7+//3+/v/+/vz//v7+//v8/P/4/Pz/7P78/+zo+P/DRm//y1k6/2Hbt/8/h/H/gnXq//f+9v/7+/P//f7+//7+/v/+/P3//v7+/4CD2/8Ffu//AuPO/5ePHf+9CAL/zz14//7+/v/4/v7//f38//z9/f/6/f3/9/3+//b+/v/syuP/mwAY/6JYAf8M4cT/AE3w/3t+1v/+/vf//Pr0//3+/v/+/v7//vz9//7+/P+xsez/Azzv/wDd9v9MzGj/zzgD/60HMP/btsz//v7+//n9+f/2/P3/9vv9//z++//49fv/vEds/8sLBf+IqDH/AL7i/xwz7v/Ry/D/+vz4//z79//+/v7//v7+//z8+//9/vf/4eD0/ygc3/8Dm/v/C+uz/5aWGv/LCwT/oRpT/+jO7P/0/v7/9/78/+7+/v/g9/7/vkV6/8MACv+jfhX/C+6e/w1i8v+ZieL//v78//n59//8+vz//v7+//39/f/8/Pz/+/v4//7+8/+ql+T/CTrd/wPI9f8g45T/rXsR/8kNAP+vBUL/1abD//r0/f/bvdX/vkd2/7gADv+wXQT/ONB//wDW7v8vSNf/7Of0//7+/P/9/Pn//v3+//7+/v/9/f3//f39//z7+f/5+vj/+v7x/3to4/8EOu//EM3+/xjkn/+Ilyj/xC8A/8ECFP+5Hlf/owA1/7gFA/+5bBD/RdFv/wTk6f8AVvf/mozh//7+8P/9/fz/+fz7//z+/f/+/v7//f39//z8/P/8/Pv//vf4//v5+f/6+/j/cGXv/ws/5f8Gtv7/A+zD/0bNVv+fbxf/m04A/75dAP+Zhif/EuaP/w3R8/8GXOv/U0bh//nx7f/8+PD//vv+//78+//+/v3//v7+//7+/v/9/f3//f39//3++P/6+fn/9/7u//7+9/+ckOb/HTbg/wBx+v8Gx/D/EeDC/yfilv8n2Z7/DunW/xC39/8FQeL/Z2fZ//bx8P/9/ff/+fn6//7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/8/P3//f71//32/f/++/b//v7s/+Le7f+DdeP/Izjg/w5i8v8AjOr/AKzy/wV59P8eONn/lZbc//z78v/+/vL/+vz5//39/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//Pz+//z+/f/+9/7//fn6//j76//+/vb//v70/+jh7/+qoN3/nJ3U/5ur4v+Spdj/09js//7++v/++/P//fj5//z8/P/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//3++v/9/vv/+/75//n8/f/++P7/9/zv/+r77f/+/vb//v7+//7+/v/+/vn//v7+//7+9//6+vj//P35//76+//++/7//v7+//7+/v/+/v7//v7+/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+ico_encoded ="AAABAAEAEBAAAAEACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAlorjAAEAAAAQgewAMMmdAAkJCQATgewAsA6SABIKDgC3JToAHg6wAAsLCwCzEy8AJNB/ALCwsADACyUAB7vsAIoA1ACwORYAKir3ABINDQCbj+sAYGriABTDxwDBGAkAJtKHAAAA/wBLv20AQUG6ADjRigCwEyYACAgIABEREQCivfEAca1DACMjIwABAQEAE9zBAJqa4AANmPUAsjEdALQIJwBLceoABQMCAHqaQAC8LVQACgkKAAQAAQAQodoADg8SAImMLgCr7NgAOm7uAAWL8gACAgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAJAsAAAAAAAAAAAAAAAAAAAAOAA4AAAAAAAAAAAAAAAAADg4OAAAAAAAAAAAAACs2LwIjAAAAAAAAAAAAAAsUCDEFLgUFBQUfAAAAAAAAKh0JAAAAAAAAAAAAAAAAABoNDwAAAAAAAAAAAAAAAAATGSkAAAAABzMhAAAAAAAAESUYAAAAAB4EFgAAAAAAAAo1IgwAAC0yAwAAAAAAAAAAFScbEigsEAEAAAAAAAAAAAAcNDAXBiYAAAAAAAAAAAAAAAAcHAAAAAAAAOADAADgAwAA4IMAAOCDAADggwAA4AMAAOADAADgAwAA8f8AAPH/AADx4wAA8eMAAPDHAAD4BwAA/A8AAP8/AAA="
 ico_decoded = base64.b64decode(ico_encoded)
 temp_file = "pt.ico"
 fout = open(temp_file,"wb")
